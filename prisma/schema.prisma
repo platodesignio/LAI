@@ -1,0 +1,309 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ModeType {
+  QUIET_MIRROR
+  STRATEGIC_GOVERNANCE
+  CONFLICT_DISSOLUTION
+  PERSONAL_DISCIPLINE
+  INSTITUTIONAL_JUDGMENT
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum NoteType {
+  DECISION_MEMO
+  JOURNAL_NOTE
+  OPERATIONAL_PROTOCOL
+  CONFLICT_RESPONSE_DRAFT
+  INSTITUTIONAL_BRIEF
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// =============================================================================
+// AUTH & USERS
+// =============================================================================
+
+model User {
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  name                 String?
+  passwordHash         String
+  role                 Role      @default(USER)
+  emailVerified        DateTime?
+  verificationToken    String?   @unique
+  verificationExpiry   DateTime?
+  resetToken           String?   @unique
+  resetTokenExpiry     DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  sessions      UserSession[]
+  conversations Conversation[]
+  savedNotes    SavedNote[]
+  feedback      Feedback[]
+  auditLogs     AuditLog[]
+
+  @@index([email])
+  @@index([verificationToken])
+  @@index([resetToken])
+}
+
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// =============================================================================
+// CONVERSATIONS & MESSAGES
+// =============================================================================
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  mode      ModeType
+  title     String?
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages   Message[]
+  savedNotes SavedNote[]
+  feedback   Feedback[]
+
+  @@index([userId])
+  @@index([userId, mode])
+  @@index([userId, archived])
+}
+
+model Message {
+  id              String      @id @default(cuid())
+  conversationId  String
+  role            MessageRole
+  content         String      @db.Text
+  executionId     String?
+  modelProvider   String?
+  modelName       String?
+  promptVersionId String?
+  inputTokens     Int?
+  outputTokens    Int?
+  durationMs      Int?
+  createdAt       DateTime    @default(now())
+
+  conversation  Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  promptVersion PromptVersion? @relation(fields: [promptVersionId], references: [id])
+  feedback      Feedback[]
+
+  @@index([conversationId])
+  @@index([executionId])
+}
+
+// =============================================================================
+// PROMPT VERSIONS (MODE SYSTEM)
+// =============================================================================
+
+model PromptVersion {
+  id           String   @id @default(cuid())
+  mode         ModeType
+  version      Int
+  systemPrompt String   @db.Text
+  isActive     Boolean  @default(false)
+  createdBy    String?
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  messages Message[]
+
+  @@unique([mode, version])
+  @@index([mode, isActive])
+}
+
+// =============================================================================
+// SAVED NOTES
+// =============================================================================
+
+model SavedNote {
+  id             String   @id @default(cuid())
+  userId         String
+  conversationId String?
+  title          String
+  content        String   @db.Text
+  noteType       NoteType
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, noteType])
+}
+
+// =============================================================================
+// FEEDBACK
+// =============================================================================
+
+model Feedback {
+  id             String    @id @default(cuid())
+  userId         String?
+  email          String?
+  conversationId String?
+  messageId      String?
+  executionId    String
+  comment        String    @db.Text
+  rating         Int?
+  flagged        Boolean   @default(false)
+  reviewed       Boolean   @default(false)
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  message      Message?      @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([executionId])
+  @@index([flagged, reviewed])
+  @@index([userId])
+}
+
+// =============================================================================
+// INCIDENTS
+// =============================================================================
+
+model Incident {
+  id          String    @id @default(cuid())
+  type        String
+  severity    Severity
+  description String    @db.Text
+  userId      String?
+  executionId String?
+  requestId   String?
+  metadata    Json?
+  resolved    Boolean   @default(false)
+  resolvedBy  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([type])
+  @@index([severity])
+  @@index([resolved])
+  @@index([userId])
+  @@index([executionId])
+}
+
+// =============================================================================
+// FEATURE FLAGS
+// =============================================================================
+
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  enabled     Boolean  @default(false)
+  description String?  @db.Text
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}
+
+// =============================================================================
+// AUDIT LOG
+// =============================================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([resource, resourceId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// =============================================================================
+// RATE LIMIT BUCKETS
+// =============================================================================
+
+model RateLimitBucket {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([resetAt])
+}
+
+// =============================================================================
+// CONTACT INQUIRIES
+// =============================================================================
+
+model ContactInquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  ipAddress String?
+  reviewed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reviewed])
+  @@index([email])
+}
