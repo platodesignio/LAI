@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
+  webpack(config) {
+    // zod-to-json-schema@3.25+ imports 'zod/v3' (a zod 4 compat path).
+    // We're on zod 3.x which has no such export, so alias it to the root zod.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "zod/v3": path.resolve("node_modules/zod"),
+    };
+    return config;
+  },
   // Suppress ESLint during `next build` — run lint separately in CI.
   // This prevents ESLint rule differences between versions from breaking deploys.
   eslint: {
