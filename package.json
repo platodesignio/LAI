@@ -40,7 +40,10 @@
     "remark-gfm": "4.0.0"
   },
   "overrides": {
-    "zod-to-json-schema": "3.23.5"
+    "zod-to-json-schema": "3.24.1",
+    "@ai-sdk/ui-utils": {
+      "zod-to-json-schema": "3.24.1"
+    }
   },
   "devDependencies": {
     "typescript": "5.7.2",
