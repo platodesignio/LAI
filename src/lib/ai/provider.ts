@@ -20,7 +20,8 @@ export interface ChatStreamOptions {
 
 export interface ChatStreamResult {
   executionId: string;
-  stream: ReturnType<typeof streamText>;
+  /** Only .textStream is consumed by callers — typed structurally to avoid SDK generic drift. */
+  stream: { textStream: AsyncIterable<string> };
   provider: string;
   model: string;
   promptVersionId: string;

@@ -1,6 +1,13 @@
+/**
+ * Server-side mode utilities — imports db. Do NOT import in "use client" components.
+ * For display helpers usable on the client, import from ./mode-constants instead.
+ */
 import type { ModeType } from "@prisma/client";
 import { db } from "@/lib/db";
 import { logger } from "@/lib/utils/logger";
+
+// Re-export client-safe helpers so server components only need one import.
+export { getModeDisplayName, getModeDescription, getAllModes } from "./mode-constants";
 
 export interface ModeConfig {
   mode: ModeType;
@@ -9,34 +16,6 @@ export interface ModeConfig {
   systemPrompt: string;
   promptVersionId: string;
 }
-
-const MODE_DISPLAY: Record<ModeType, { name: string; description: string }> = {
-  QUIET_MIRROR: {
-    name: "Quiet Mirror",
-    description:
-      "Returns a cleaner picture of your situation. Reduces emotional inflation. Surfaces hidden premises, contradictions, and avoidance patterns.",
-  },
-  STRATEGIC_GOVERNANCE: {
-    name: "Strategic Governance",
-    description:
-      "Structures decisions under constraint. Separates principle from preference, legitimacy from efficiency, and risk from noise.",
-  },
-  CONFLICT_DISSOLUTION: {
-    name: "Conflict Dissolution",
-    description:
-      "Reduces escalation. Distinguishes grievance from demand, fact from interpretation. Drafts language that lowers heat without coaching manipulation.",
-  },
-  PERSONAL_DISCIPLINE: {
-    name: "Personal Discipline",
-    description:
-      "Converts vague intention into repeatable protocol. Translates aspiration into triggers, constraints, and review loops.",
-  },
-  INSTITUTIONAL_JUDGMENT: {
-    name: "Institutional Judgment",
-    description:
-      "Assesses policy, governance, and public responsibility. Separates private morality from legal boundary and operational feasibility.",
-  },
-};
 
 /**
  * Get the active PromptVersion for a mode from the database.
@@ -67,26 +46,6 @@ export async function getActiveModePrompt(
   // Fallback prompt if DB lookup fails
   const fallback = getFallbackPrompt(mode);
   return { systemPrompt: fallback, promptVersionId: "fallback" };
-}
-
-export function getModeDisplayName(mode: ModeType): string {
-  return MODE_DISPLAY[mode]?.name ?? mode;
-}
-
-export function getModeDescription(mode: ModeType): string {
-  return MODE_DISPLAY[mode]?.description ?? "";
-}
-
-export function getAllModes(): Array<{
-  mode: ModeType;
-  name: string;
-  description: string;
-}> {
-  return (Object.keys(MODE_DISPLAY) as ModeType[]).map((mode) => ({
-    mode,
-    name: MODE_DISPLAY[mode]!.name,
-    description: MODE_DISPLAY[mode]!.description,
-  }));
 }
 
 function getFallbackPrompt(mode: ModeType): string {

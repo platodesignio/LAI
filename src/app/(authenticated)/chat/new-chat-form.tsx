@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { ModeType } from "@prisma/client";
 import type { ConversationWithCount } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { getModeDisplayName } from "@/lib/ai/modes";
+import { getModeDisplayName } from "@/lib/ai/mode-constants";
 
 interface ModeOption {
   mode: ModeType;
