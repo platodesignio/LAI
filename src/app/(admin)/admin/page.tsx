@@ -63,7 +63,7 @@ export default async function AdminDashboardPage() {
         <StatCard
           label="Unresolved incidents"
           value={unresolvedIncidentCount}
-          highlight={unresolvedIncidentCount > 0}
+          accent={unresolvedIncidentCount > 0}
         />
       </div>
 

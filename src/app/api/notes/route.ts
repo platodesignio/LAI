@@ -13,7 +13,7 @@ export async function GET(_request: NextRequest): Promise<Response> {
       return apiError("Not authenticated.", 401);
     }
 
-    const notes = await db.note.findMany({
+    const notes = await db.savedNote.findMany({
       where: { userId: session.user.id },
       orderBy: { updatedAt: "desc" },
       select: {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       }
     }
 
-    const note = await db.note.create({
+    const note = await db.savedNote.create({
       data: {
         userId: session.user.id,
         title,

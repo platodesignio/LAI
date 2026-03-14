@@ -88,7 +88,7 @@ export async function GET(): Promise<Response> {
     const messagesPerDay = messagesPerDayRaw.map((row) => ({
       date:
         row.date instanceof Date
-          ? row.date.toISOString().split("T")[0]
+          ? (row.date.toISOString().split("T")[0] ?? "")
           : String(row.date),
       count: typeof row.count === "bigint" ? Number(row.count) : row.count,
     }));

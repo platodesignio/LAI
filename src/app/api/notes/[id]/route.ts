@@ -18,7 +18,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const note = await db.note.findUnique({
+    const note = await db.savedNote.findUnique({
       where: { id, userId: session.user.id },
       select: {
         id: true,
@@ -56,7 +56,7 @@ export async function PATCH(
 
     const { id } = await params;
 
-    const existing = await db.note.findUnique({
+    const existing = await db.savedNote.findUnique({
       where: { id, userId: session.user.id },
       select: { id: true },
     });
@@ -81,7 +81,7 @@ export async function PATCH(
 
     const { title, content, noteType } = parsed.data;
 
-    const updated = await db.note.update({
+    const updated = await db.savedNote.update({
       where: { id },
       data: {
         ...(title !== undefined ? { title } : {}),
@@ -120,7 +120,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const existing = await db.note.findUnique({
+    const existing = await db.savedNote.findUnique({
       where: { id, userId: session.user.id },
       select: { id: true },
     });
@@ -129,7 +129,7 @@ export async function DELETE(
       return apiError("Note not found.", 404);
     }
 
-    await db.note.delete({ where: { id } });
+    await db.savedNote.delete({ where: { id } });
 
     return apiSuccess({ message: "Note deleted." });
   } catch (err) {

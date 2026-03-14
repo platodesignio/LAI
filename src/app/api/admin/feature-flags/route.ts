@@ -88,7 +88,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         key,
         enabled,
         description: description ?? null,
-        metadata: metadata as never ?? null,
+        metadata: (metadata as unknown as object) ?? null,
       },
       select: {
         id: true,

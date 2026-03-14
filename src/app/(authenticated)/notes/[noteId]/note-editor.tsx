@@ -128,8 +128,8 @@ export function NoteEditor({ note }: NoteEditorProps) {
         </div>
       </div>
 
-      {error && <FormError message={error} className="mb-4" />}
-      {success && <FormSuccess message={success} className="mb-4" />}
+      {error && <div className="mb-4"><FormError message={error} /></div>}
+      {success && <div className="mb-4"><FormSuccess message={success} /></div>}
 
       <div className="space-y-4">
         <div>

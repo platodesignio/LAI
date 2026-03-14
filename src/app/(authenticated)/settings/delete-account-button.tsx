@@ -45,7 +45,7 @@ export function DeleteAccountButton() {
         Delete account
       </Button>
 
-      <Modal open={open} onClose={() => !loading && setOpen(false)}>
+      <Modal open={open} onClose={() => { if (!loading) setOpen(false); }} title="">
         <div className="p-6 max-w-md">
           <h2 className="text-lg font-semibold text-black mb-2">
             Delete account
@@ -64,7 +64,7 @@ export function DeleteAccountButton() {
             className="mb-4 border-gray-300 text-black"
             disabled={loading}
           />
-          {error && <FormError message={error} className="mb-4" />}
+          {error && <div className="mb-4"><FormError message={error} /></div>}
           <div className="flex items-center gap-3 justify-end">
             <Button
               variant="ghost"

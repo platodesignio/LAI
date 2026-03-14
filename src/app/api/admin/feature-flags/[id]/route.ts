@@ -52,7 +52,7 @@ export async function PATCH(
       data: {
         enabled,
         ...(description !== undefined ? { description } : {}),
-        ...(metadata !== undefined ? { metadata: metadata as never } : {}),
+        ...(metadata !== undefined ? { metadata: metadata as unknown as object } : {}),
       },
       select: {
         id: true,
