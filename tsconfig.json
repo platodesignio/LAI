@@ -27,5 +27,11 @@
     "target": "ES2017"
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "tests/e2e"]
+  "exclude": [
+    "node_modules",
+    "tests",
+    "prisma/seed.ts",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ]
 }

@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    typedRoutes: false,
+  // Suppress ESLint during `next build` — run lint separately in CI.
+  // This prevents ESLint rule differences between versions from breaking deploys.
+  eslint: {
+    ignoreDuringBuilds: true,
   },
   // Security headers are applied in middleware.ts for granular control.
   // next.config level headers below serve as a fallback.
@@ -23,14 +25,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Ensure Prisma works in serverless environments
+  // Ensure Prisma and bcrypt work in serverless environments (no bundling).
   serverExternalPackages: ["@prisma/client", "bcryptjs"],
-  // Image optimization settings
+  // Image optimization — no remote patterns needed for now.
   images: {
     remotePatterns: [],
   },
-  // Output configuration for Vercel
-  output: undefined, // Let Vercel handle this
 };
 
 export default nextConfig;

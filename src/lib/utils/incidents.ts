@@ -26,7 +26,7 @@ export async function logIncident(params: IncidentParams): Promise<void> {
         userId: params.userId,
         executionId: params.executionId,
         requestId: params.requestId,
-        metadata: params.metadata as never,
+        metadata: params.metadata as unknown as object,
       },
     });
   } catch (err) {

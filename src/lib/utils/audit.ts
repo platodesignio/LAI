@@ -23,7 +23,7 @@ export async function writeAuditLog(params: AuditParams): Promise<void> {
         action: params.action,
         resource: params.resource,
         resourceId: params.resourceId,
-        metadata: params.metadata as never,
+        metadata: params.metadata as unknown as object,
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
       },
