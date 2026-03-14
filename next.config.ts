@@ -35,8 +35,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Ensure Prisma and bcrypt work in serverless environments (no bundling).
-  serverExternalPackages: ["@prisma/client", "bcryptjs"],
+  // Ensure these server-only packages are not bundled by webpack.
+  // This also prevents webpack from following @ai-sdk/ui-utils → zod-to-json-schema
+  // → zod/v3 import chain (zod/v3 only exists in zod 4, not zod 3.x).
+  serverExternalPackages: [
+    "@prisma/client",
+    "bcryptjs",
+    "ai",
+    "@ai-sdk/anthropic",
+    "@ai-sdk/openai",
+    "@ai-sdk/provider",
+    "@ai-sdk/ui-utils",
+  ],
   // Image optimization — no remote patterns needed for now.
   images: {
     remotePatterns: [],
