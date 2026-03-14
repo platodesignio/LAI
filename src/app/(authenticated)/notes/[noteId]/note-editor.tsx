@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { NoteType } from "@prisma/client";
 import type { SavedNote } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,20 +13,19 @@ interface NoteEditorProps {
   note: SavedNote;
 }
 
-const NOTE_TYPES = [
-  "General",
-  "Insight",
-  "Action",
-  "Reference",
-  "Draft",
-  "Archive",
+const NOTE_TYPE_OPTIONS: { value: NoteType; label: string }[] = [
+  { value: "DECISION_MEMO", label: "Decision Memo" },
+  { value: "JOURNAL_NOTE", label: "Journal Note" },
+  { value: "OPERATIONAL_PROTOCOL", label: "Operational Protocol" },
+  { value: "CONFLICT_RESPONSE_DRAFT", label: "Conflict Response Draft" },
+  { value: "INSTITUTIONAL_BRIEF", label: "Institutional Brief" },
 ];
 
 export function NoteEditor({ note }: NoteEditorProps) {
   const router = useRouter();
   const [title, setTitle] = useState(note.title ?? "");
   const [content, setContent] = useState(note.content ?? "");
-  const [noteType, setNoteType] = useState(note.noteType ?? "General");
+  const [noteType, setNoteType] = useState<NoteType>(note.noteType ?? "JOURNAL_NOTE");
   const [preview, setPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -150,12 +150,12 @@ export function NoteEditor({ note }: NoteEditorProps) {
           </label>
           <select
             value={noteType}
-            onChange={(e) => setNoteType(e.target.value)}
+            onChange={(e) => setNoteType(e.target.value as NoteType)}
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black bg-white"
           >
-            {NOTE_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {NOTE_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </select>
